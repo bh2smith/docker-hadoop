@@ -65,7 +65,7 @@ services:
 
   hive-server:
     build:
-      context: ./metastore-postgresql
+      context: ./metastore
     env_file:
       - ./hadoop.env
     environment:
@@ -77,7 +77,7 @@ services:
 
   hive-metastore:
     build:
-      context: ./metastore-postgresql
+      context: ./metastore
     env_file:
       - ./hadoop.env
     # command: /opt/hive/bin/hive --service metastore
@@ -89,7 +89,7 @@ services:
 
   hive-metastore-postgresql:
     build:
-      context: ./metastore-postgresql
+      context: ./metastore
     environment:
       POSTGRES_PASSWORD: hive
 
