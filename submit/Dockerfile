@@ -1,4 +1,4 @@
-FROM bh2smith/hive-base
+FROM hive-base
 
 COPY WordCount.jar /opt/hadoop/applications/WordCount.jar
 

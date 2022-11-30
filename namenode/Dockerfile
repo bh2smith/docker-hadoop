@@ -1,4 +1,4 @@
-FROM bh2smith/hive-base
+FROM hive-base
 
 HEALTHCHECK CMD curl -f http://localhost:9870/ || exit 1
 
