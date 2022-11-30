@@ -64,27 +64,34 @@ services:
       - ./hadoop.env
 
   hive-server:
-    image: bde2020/hive:2.3.2-postgresql-metastore
+    build:
+      context: ./metastore-postgresql
     env_file:
       - ./hadoop.env
     environment:
       HIVE_CORE_CONF_javax_jdo_option_ConnectionURL: "jdbc:postgresql://hive-metastore/metastore"
       SERVICE_PRECONDITION: "hive-metastore:9083"
+      POSTGRES_PASSWORD: hive
     ports:
       - "10000:10000"
 
   hive-metastore:
-    image: bde2020/hive:2.3.2-postgresql-metastore
+    build:
+      context: ./metastore-postgresql
     env_file:
       - ./hadoop.env
-    command: /opt/hive/bin/hive --service metastore
+    # command: /opt/hive/bin/hive --service metastore
     environment:
+      POSTGRES_PASSWORD: hive
       SERVICE_PRECONDITION: "namenode:50070 datanode:50075 hive-metastore-postgresql:5432"
     ports:
       - "9083:9083"
 
   hive-metastore-postgresql:
-    image: bde2020/hive-metastore-postgresql:2.3.0
+    build:
+      context: ./metastore-postgresql
+    environment:
+      POSTGRES_PASSWORD: hive
 
   
 volumes:
