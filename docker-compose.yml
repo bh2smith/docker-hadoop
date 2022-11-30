@@ -7,9 +7,7 @@ services:
       context: ./namenode
     restart: always
     ports:
-      - 9870:9870
       - 9000:9000
-      - 50070:50070
     volumes:
       - hadoop_namenode:/hadoop/dfs/name
     environment:
@@ -27,7 +25,7 @@ services:
     ports:
       - 50075:50075
     environment:
-      SERVICE_PRECONDITION: "namenode:50070"
+      SERVICE_PRECONDITION: "namenode:9000"
     env_file:
       - ./hadoop.env
   
@@ -37,7 +35,7 @@ services:
       context: ./resourcemanager
     restart: always
     environment:
-      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864"
+      SERVICE_PRECONDITION: "namenode:9000 datanode:9864"
     env_file:
       - ./hadoop.env
 
@@ -47,21 +45,21 @@ services:
       context: ./nodemanager
     restart: always
     environment:
-      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864 resourcemanager:8088"
+      SERVICE_PRECONDITION: "namenode:9000 datanode:9864 resourcemanager:8088"
     env_file:
       - ./hadoop.env
   
-  historyserver:
-    container_name: historyserver
-    build:
-      context: ./historyserver
-    restart: always
-    environment:
-      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864 resourcemanager:8088"
-    volumes:
-      - hadoop_historyserver:/hadoop/yarn/timeline
-    env_file:
-      - ./hadoop.env
+  # historyserver:
+  #   container_name: historyserver
+  #   build:
+  #     context: ./historyserver
+  #   restart: always
+  #   environment:
+  #     SERVICE_PRECONDITION: "namenode:9000 datanode:9864 resourcemanager:8088"
+  #   volumes:
+  #     - hadoop_historyserver:/hadoop/yarn/timeline
+  #   env_file:
+  #     - ./hadoop.env
 
   hive-server:
     build:
@@ -83,7 +81,7 @@ services:
     # command: /opt/hive/bin/hive --service metastore
     environment:
       POSTGRES_PASSWORD: hive
-      SERVICE_PRECONDITION: "namenode:50070 datanode:50075 hive-metastore-postgresql:5432"
+      SERVICE_PRECONDITION: "namenode:9000 datanode:50075 hive-metastore-postgresql:5432"
     ports:
       - "9083:9083"
 
@@ -97,4 +95,4 @@ services:
 volumes:
   hadoop_namenode:
   hadoop_datanode:
-  hadoop_historyserver:
+  # hadoop_historyserver:

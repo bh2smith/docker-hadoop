@@ -17,6 +17,7 @@ rm -r $namedir/lost+found
 if [ "`ls -A $namedir`" == "" ]; then
   echo "Formatting namenode name directory: $namedir"
   $HADOOP_HOME/bin/hdfs --config $HADOOP_CONF_DIR namenode -format $CLUSTER_NAME
+  $HADOOP_HOME/bin/hdfs dfsadmin -upgrade
 fi
 
 $HADOOP_HOME/bin/hdfs --config $HADOOP_CONF_DIR namenode
