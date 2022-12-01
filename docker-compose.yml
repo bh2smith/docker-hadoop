@@ -2,11 +2,11 @@ version: "3"
 
 services:
   namenode:
-    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
     container_name: namenode
+    build:
+      context: ./namenode
     restart: always
     ports:
-      - 9870:9870
       - 9000:9000
     volumes:
       - hadoop_namenode:/hadoop/dfs/name
@@ -16,46 +16,83 @@ services:
       - ./hadoop.env
 
   datanode:
-    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
     container_name: datanode
+    build:
+      context: ./datanode
     restart: always
     volumes:
       - hadoop_datanode:/hadoop/dfs/data
+    ports:
+      - 50075:50075
     environment:
-      SERVICE_PRECONDITION: "namenode:9870"
+      SERVICE_PRECONDITION: "namenode:9000"
     env_file:
       - ./hadoop.env
   
   resourcemanager:
-    image: bde2020/hadoop-resourcemanager:2.0.0-hadoop3.2.1-java8
     container_name: resourcemanager
+    build:
+      context: ./resourcemanager
     restart: always
     environment:
-      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864"
+      SERVICE_PRECONDITION: "namenode:9000 datanode:9864"
     env_file:
       - ./hadoop.env
 
   nodemanager1:
-    image: bde2020/hadoop-nodemanager:2.0.0-hadoop3.2.1-java8
     container_name: nodemanager
+    build:
+      context: ./nodemanager
     restart: always
     environment:
-      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864 resourcemanager:8088"
+      SERVICE_PRECONDITION: "namenode:9000 datanode:9864 resourcemanager:8088"
     env_file:
       - ./hadoop.env
   
-  historyserver:
-    image: bde2020/hadoop-historyserver:2.0.0-hadoop3.2.1-java8
-    container_name: historyserver
-    restart: always
-    environment:
-      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864 resourcemanager:8088"
-    volumes:
-      - hadoop_historyserver:/hadoop/yarn/timeline
+  # historyserver:
+  #   container_name: historyserver
+  #   build:
+  #     context: ./historyserver
+  #   restart: always
+  #   environment:
+  #     SERVICE_PRECONDITION: "namenode:9000 datanode:9864 resourcemanager:8088"
+  #   volumes:
+  #     - hadoop_historyserver:/hadoop/yarn/timeline
+  #   env_file:
+  #     - ./hadoop.env
+
+  hive-server:
+    build:
+      context: ./metastore
     env_file:
       - ./hadoop.env
+    environment:
+      HIVE_CORE_CONF_javax_jdo_option_ConnectionURL: "jdbc:postgresql://hive-metastore/metastore"
+      SERVICE_PRECONDITION: "hive-metastore:9083"
+      POSTGRES_PASSWORD: hive
+    ports:
+      - "10000:10000"
+
+  hive-metastore:
+    build:
+      context: ./metastore
+    env_file:
+      - ./hadoop.env
+    # command: /opt/hive/bin/hive --service metastore
+    environment:
+      POSTGRES_PASSWORD: hive
+      SERVICE_PRECONDITION: "namenode:9000 datanode:50075 hive-metastore-postgresql:5432"
+    ports:
+      - "9083:9083"
+
+  hive-metastore-postgresql:
+    build:
+      context: ./metastore
+    environment:
+      POSTGRES_PASSWORD: hive
+
   
 volumes:
   hadoop_namenode:
   hadoop_datanode:
-  hadoop_historyserver:
+  # hadoop_historyserver:
